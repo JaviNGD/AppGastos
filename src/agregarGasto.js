@@ -1,4 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
+import { toggleFormularioGasto } from './eventoBtnFormularioGasto';
+import mostrarGastos from './mostrarGastos';
 
 const formulario = document.querySelector('#formulario-gasto form');
 const descripcion = formulario.descripcion;
@@ -75,7 +77,7 @@ formulario.addEventListener('submit', (e) => {
     e.preventDefault();
 
    if (comprobarDescripcion() && comprobarPrecio()) {
-        const gasto = {
+        const nuevoGasto = {
             id: uuidv4(),
             fecha: new Date(),
             descripcion: descripcion.value,
@@ -85,11 +87,17 @@ formulario.addEventListener('submit', (e) => {
         const gastosGuardados = JSON.parse(window.localStorage.getItem('gastos'));
 
         if (gastosGuardados) {
-            const nuevosGastos = [...gastosGuardados, {...gasto }];
+            //Si hay gastos guardados, se añade el nuevo gasto al array
+            const nuevosGastos = [...gastosGuardados, nuevoGasto ];
             window.localStorage.setItem('gastos', JSON.stringify(nuevosGastos));
         } else {
             //Si no hay gastos guardados, se crea un array con el gasto
-            window.localStorage.setItem('gastos', JSON.stringify([{...gasto }]));
+            window.localStorage.setItem('gastos', JSON.stringify([{...nuevoGasto }]));
         }
+
+        //Se resetea el formulario y lo cierra
+        formulario.reset();
+        toggleFormularioGasto();
+        mostrarGastos();
    }
 });

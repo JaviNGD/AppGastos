@@ -20,3 +20,5 @@ const toggleFormularioGasto = () => {
 boton.addEventListener('click', (e) => {
     toggleFormularioGasto();
 });
+
+export { toggleFormularioGasto };
