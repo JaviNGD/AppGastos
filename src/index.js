@@ -1,1 +1,2 @@
-console.log('test index.js');
+import './eventoBtnFormularioGasto';
+import './agregarGasto';
