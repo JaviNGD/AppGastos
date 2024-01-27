@@ -1,6 +1,7 @@
 import format from 'date-fns/format'
 import parseISO from 'date-fns/parseISO'
 import { es } from 'date-fns/locale'
+import { isThisMonth } from 'date-fns';
 
 const listaGastos = document.querySelector('#gastos .gastos__lista');
 
@@ -9,19 +10,26 @@ const mostrarGastos = () => {
     const gastos = JSON.parse(window.localStorage.getItem('gastos'));
     
     if (gastos && gastos.length > 0) {
-        //Si hay gastos:
+        // Si hay gastos:
+
+        // Filtro de gastos por mes
+        const gastosDelMes = gastos.filter(gasto => {
+            if (isThisMonth(parseISO(gasto.fecha))) {
+                return gasto;
+            }
+        });
         
-        //Elimina el mensaje de que no hay gastos
+        // Elimina el mensaje de que no hay gastos
         document.querySelector('#gastos .gastos__mensaje').classList.remove('gastos__mensaje--active');
 
         // Se limpia el DOM
         listaGastos.innerHTML = "";
 
-        //Formato de precio
+        // Formato de precio
         const formatoPrecio = new Intl.NumberFormat('en-CL', { style: 'currency', currency: 'CLP' });
         
         // Se crea el HTML de los gastos
-        gastos.forEach(gasto => {
+        gastosDelMes.forEach(gasto => {
             const precio = formatoPrecio.format(gasto.precio);
             const fecha = format(parseISO(gasto.fecha), "d 'de' MMMM 'de' yyyy", {locale: es});
 
@@ -80,7 +88,7 @@ const mostrarGastos = () => {
         // Se limpia el DOM
         listaGastos.innerHTML = "";
 
-        //Muestra mensaje de que no hay gastos
+        // Muestra mensaje de que no hay gastos
         document.querySelector('#gastos .gastos__mensaje').classList.add('gastos__mensaje--active');
     }
 }; 
