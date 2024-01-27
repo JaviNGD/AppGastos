@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { toggleFormularioGasto } from './eventoBtnFormularioGasto';
 import mostrarGastos from './mostrarGastos';
+import mostrarTotalGastado from './mostrarTotalGastado';
 
 const formulario = document.querySelector('#formulario-gasto form');
 const descripcion = formulario.descripcion;
@@ -99,5 +100,6 @@ formulario.addEventListener('submit', (e) => {
         formulario.reset();
         toggleFormularioGasto();
         mostrarGastos();
+        mostrarTotalGastado();
    }
 });

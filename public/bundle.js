@@ -3621,6 +3621,65 @@ const es = {
   },
 };
 
+/**
+ * @name isSameMonth
+ * @category Month Helpers
+ * @summary Are the given dates in the same month (and year)?
+ *
+ * @description
+ * Are the given dates in the same month (and year)?
+ *
+ * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
+ *
+ * @param dateLeft - The first date to check
+ * @param dateRight - The second date to check
+ *
+ * @returns The dates are in the same month (and year)
+ *
+ * @example
+ * // Are 2 September 2014 and 25 September 2014 in the same month?
+ * const result = isSameMonth(new Date(2014, 8, 2), new Date(2014, 8, 25))
+ * //=> true
+ *
+ * @example
+ * // Are 2 September 2014 and 25 September 2015 in the same month?
+ * const result = isSameMonth(new Date(2014, 8, 2), new Date(2015, 8, 25))
+ * //=> false
+ */
+function isSameMonth(dateLeft, dateRight) {
+  const _dateLeft = toDate(dateLeft);
+  const _dateRight = toDate(dateRight);
+  return (
+    _dateLeft.getFullYear() === _dateRight.getFullYear() &&
+    _dateLeft.getMonth() === _dateRight.getMonth()
+  );
+}
+
+/**
+ * @name isThisMonth
+ * @category Month Helpers
+ * @summary Is the given date in the same month as the current date?
+ * @pure false
+ *
+ * @description
+ * Is the given date in the same month as the current date?
+ *
+ * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
+ *
+ * @param date - The date to check
+ *
+ * @returns The date is in this month
+ *
+ * @example
+ * // If today is 25 September 2014, is 15 September 2014 in this month?
+ * const result = isThisMonth(new Date(2014, 8, 15))
+ * //=> true
+ */
+
+function isThisMonth(date) {
+  return isSameMonth(Date.now(), date);
+}
+
 const listaGastos = document.querySelector('#gastos .gastos__lista');
 
 const mostrarGastos = () => {
@@ -3628,19 +3687,26 @@ const mostrarGastos = () => {
     const gastos = JSON.parse(window.localStorage.getItem('gastos'));
     
     if (gastos && gastos.length > 0) {
-        //Si hay gastos:
+        // Si hay gastos:
+
+        // Filtro de gastos por mes
+        const gastosDelMes = gastos.filter(gasto => {
+            if (isThisMonth(parseISO(gasto.fecha))) {
+                return gasto;
+            }
+        });
         
-        //Elimina el mensaje de que no hay gastos
+        // Elimina el mensaje de que no hay gastos
         document.querySelector('#gastos .gastos__mensaje').classList.remove('gastos__mensaje--active');
 
         // Se limpia el DOM
         listaGastos.innerHTML = "";
 
-        //Formato de precio
+        // Formato de precio
         const formatoPrecio = new Intl.NumberFormat('en-CL', { style: 'currency', currency: 'CLP' });
         
         // Se crea el HTML de los gastos
-        gastos.forEach(gasto => {
+        gastosDelMes.forEach(gasto => {
             const precio = formatoPrecio.format(gasto.precio);
             const fecha = format(parseISO(gasto.fecha), "d 'de' MMMM 'de' yyyy", {locale: es});
 
@@ -3699,9 +3765,33 @@ const mostrarGastos = () => {
         // Se limpia el DOM
         listaGastos.innerHTML = "";
 
-        //Muestra mensaje de que no hay gastos
+        // Muestra mensaje de que no hay gastos
         document.querySelector('#gastos .gastos__mensaje').classList.add('gastos__mensaje--active');
     }
+};
+
+const mostrarTotalGastado = () => {
+	const contenedorTotalGastado = document.getElementById('total-gastado');
+	const gastos = JSON.parse(window.localStorage.getItem('gastos'));
+	let total = 0;
+
+	if (gastos) {
+		const gastosDelMes = gastos.filter((gasto) => {
+			if (isThisMonth(parseISO(gasto.fecha))) {
+				return gasto;
+			}
+		});
+
+		if (gastosDelMes) {
+			gastosDelMes.forEach((gasto) => {
+				total += parseFloat(gasto.precio);
+			});
+		}
+	}
+	
+	const formatoMoneda = new Intl.NumberFormat('en-CL', { style: 'currency', currency: 'CLP' });
+    // Muestra el total de gastos del mes
+	contenedorTotalGastado.innerText = formatoMoneda.format(total);
 };
 
 const formulario = document.querySelector('#formulario-gasto form');
@@ -3801,8 +3891,10 @@ formulario.addEventListener('submit', (e) => {
         formulario.reset();
         toggleFormularioGasto();
         mostrarGastos();
+        mostrarTotalGastado();
    }
 });
 
 mostrarGastos();
+mostrarTotalGastado();
 //# sourceMappingURL=bundle.js.map
