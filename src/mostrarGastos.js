@@ -1,3 +1,7 @@
+import format from 'date-fns/format'
+import parseISO from 'date-fns/parseISO'
+import { es } from 'date-fns/locale'
+
 const listaGastos = document.querySelector('#gastos .gastos__lista');
 
 const mostrarGastos = () => {
@@ -13,16 +17,22 @@ const mostrarGastos = () => {
         // Se limpia el DOM
         listaGastos.innerHTML = "";
 
+        //Formato de precio
+        const formatoPrecio = new Intl.NumberFormat('en-CL', { style: 'currency', currency: 'CLP' });
+        
         // Se crea el HTML de los gastos
         gastos.forEach(gasto => {
+            const precio = formatoPrecio.format(gasto.precio);
+            const fecha = format(parseISO(gasto.fecha), "d 'de' MMMM 'de' yyyy", {locale: es});
+
             listaGastos.innerHTML += `
                 <div class="gasto" data-id="${gasto.id}">
                     <div class="gasto__info">
                         <div>
                             <p class="gasto__nombre">${gasto.descripcion}</p>
-                            <p class="gasto__cantidad">$${gasto.precio}</p>
+                            <p class="gasto__cantidad">${precio}</p>
                         </div>
-                    <p class="gasto__fecha">${gasto.fecha}</p>
+                    <p class="gasto__fecha">${fecha}</p>
                 </div>
                 <div class="gasto__acciones">
                     <button class="gasto__btn" data-accion="editar-gasto">
