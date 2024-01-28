@@ -3962,6 +3962,7 @@ contenedorGastos.addEventListener('click', (e) => {
         }
     }
 
+    // Editar gasto
     if (e.target.closest('[data-accion="editar-gasto"]')){
         // Se obtiene el id del gasto a editar
         const id = gasto.dataset.id;
@@ -3989,6 +3990,27 @@ contenedorGastos.addEventListener('click', (e) => {
             // Se muestra el formulario
             toggleFormularioGasto('editarGasto');
         }
+    }
+
+    // Eliminar gasto
+    if (e.target.closest('[data-accion="eliminar-gasto"]')){
+        // Se obtiene el id del gasto a eliminar
+        const id = e.target.closest('.gasto').dataset.id;
+        
+        // Se obtienen los gastos desde el localStorage
+        const gastosGuardados = JSON.parse(window.localStorage.getItem('gastos'));
+
+        if (gastosGuardados) {
+            const nuevosGastos = gastosGuardados.filter((gasto) => {
+                if (gasto.id !== id) {
+                    return gasto;
+                }
+            }); 
+            window.localStorage.setItem('gastos', JSON.stringify(nuevosGastos));
+        }
+
+        mostrarGastos();   
+        mostrarTotalGastado();
     }
 });
 
