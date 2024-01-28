@@ -3,7 +3,7 @@
 const boton = document.getElementById('toggle-form-gasto');
 const formularioGasto = document.getElementById('formulario-gasto');
 
-const toggleFormularioGasto = () => {
+const toggleFormularioGasto = (modo = 'agregarGasto') => {
     if ([...formularioGasto.classList].includes('formulario-gasto--active')){
 
         //Cerrar formulario
@@ -16,6 +16,20 @@ const toggleFormularioGasto = () => {
         boton.classList.add('agregar-gasto__btn--active');
         formularioGasto.classList.add('formulario-gasto--active');
 
+        if (modo === 'editarGasto') {
+            document.querySelector('.formulario-gasto__titulo').textContent = 'Editar Gasto';
+            document.querySelector('.formulario-gasto__btn').textContent = 'Guardar';
+            document.getElementById('formulario-gasto').dataset.modo = 'editarGasto';
+        } else {
+            // Se limpia el formulario
+            document.getElementById('descripcion').value = '';
+            document.getElementById('precio').value = '';
+
+            document.querySelector('.formulario-gasto__titulo').textContent = 'Agregar Gasto';
+            document.querySelector('.formulario-gasto__btn').textContent = 'Agregar  Gasto';
+            document.getElementById('formulario-gasto').dataset.modo = 'agregarGasto';
+        
+        }
     }};
 
 boton.addEventListener('click', (e) => {
@@ -3868,6 +3882,10 @@ precio.addEventListener('keyup', (e) => {
 formulario.addEventListener('submit', (e) => {
     e.preventDefault();
 
+    // Obtiene el modo del formulario
+    const modo = formulario.closest('#formulario-gasto')?.dataset?.modo;
+
+    // Comprueba descripción y precio
    if (comprobarDescripcion() && comprobarPrecio()) {
         const nuevoGasto = {
             id: v4(),
@@ -3878,13 +3896,41 @@ formulario.addEventListener('submit', (e) => {
 
         const gastosGuardados = JSON.parse(window.localStorage.getItem('gastos'));
 
-        if (gastosGuardados) {
-            //Si hay gastos guardados, se añade el nuevo gasto al array
-            const nuevosGastos = [...gastosGuardados, nuevoGasto ];
+        if (modo === 'agregarGasto') {
+            if (gastosGuardados) {
+                //Si hay gastos guardados, se añade el nuevo gasto al array
+                const nuevosGastos = [...gastosGuardados, nuevoGasto ];
+                window.localStorage.setItem('gastos', JSON.stringify(nuevosGastos));
+            } else {
+                //Si no hay gastos guardados, se crea un array con el gasto
+                window.localStorage.setItem('gastos', JSON.stringify([{...nuevoGasto }]));
+            }
+        } else if (modo === 'editarGasto') {
+            //Se obtiene el id del gasto a editar
+            const id = document.getElementById('formulario-gasto').dataset?.id;
+
+            //Se obtiene el gasto a editar
+            let indexGastoAEditar;
+
+            if (id && gastosGuardados) {
+                gastosGuardados.forEach((gasto, index) => {
+                    if (gasto.id === id) {
+                        indexGastoAEditar = index;
+                    }
+                });
+            }
+
+            //Se edita el gasto
+            const nuevosGastos = [...gastosGuardados];
+            nuevosGastos[indexGastoAEditar] = {
+                ...gastosGuardados[indexGastoAEditar],
+                descripcion: descripcion.value,
+                precio: precio.value,
+            };
+
+            //Se guarda el gasto editado
             window.localStorage.setItem('gastos', JSON.stringify(nuevosGastos));
-        } else {
-            //Si no hay gastos guardados, se crea un array con el gasto
-            window.localStorage.setItem('gastos', JSON.stringify([{...nuevoGasto }]));
+
         }
 
         //Se resetea el formulario y lo cierra
@@ -3913,6 +3959,35 @@ contenedorGastos.addEventListener('click', (e) => {
                 inline: 'start',
                 block: 'nearest',
             });
+        }
+    }
+
+    if (e.target.closest('[data-accion="editar-gasto"]')){
+        // Se obtiene el id del gasto a editar
+        const id = gasto.dataset.id;
+        
+        // Se obtiene el gasto desde el localStorage
+        const gastosGuardados = JSON.parse(window.localStorage.getItem('gastos'));
+
+        let descripcion = '';
+        let precio = '';
+
+        // Comprueba si existen gastos guardados
+        if (gastosGuardados && gastosGuardados.length > 0){
+             gastosGuardados.forEach((gasto) => {
+                if (gasto.id === id) {
+                    descripcion = gasto.descripcion;
+                    precio = gasto.precio;
+                }
+            });
+
+            // Se obtiene el formulario
+            document.querySelector('#formulario-gasto #descripcion').value = descripcion;
+            document.querySelector('#formulario-gasto #precio').value = precio;
+            document.querySelector('#formulario-gasto').dataset.id = id;
+
+            // Se muestra el formulario
+            toggleFormularioGasto('editarGasto');
         }
     }
 });

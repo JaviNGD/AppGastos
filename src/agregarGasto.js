@@ -77,6 +77,10 @@ precio.addEventListener('keyup', (e) => {
 formulario.addEventListener('submit', (e) => {
     e.preventDefault();
 
+    // Obtiene el modo del formulario
+    const modo = formulario.closest('#formulario-gasto')?.dataset?.modo;
+
+    // Comprueba descripción y precio
    if (comprobarDescripcion() && comprobarPrecio()) {
         const nuevoGasto = {
             id: uuidv4(),
@@ -87,13 +91,41 @@ formulario.addEventListener('submit', (e) => {
 
         const gastosGuardados = JSON.parse(window.localStorage.getItem('gastos'));
 
-        if (gastosGuardados) {
-            //Si hay gastos guardados, se añade el nuevo gasto al array
-            const nuevosGastos = [...gastosGuardados, nuevoGasto ];
+        if (modo === 'agregarGasto') {
+            if (gastosGuardados) {
+                //Si hay gastos guardados, se añade el nuevo gasto al array
+                const nuevosGastos = [...gastosGuardados, nuevoGasto ];
+                window.localStorage.setItem('gastos', JSON.stringify(nuevosGastos));
+            } else {
+                //Si no hay gastos guardados, se crea un array con el gasto
+                window.localStorage.setItem('gastos', JSON.stringify([{...nuevoGasto }]));
+            }
+        } else if (modo === 'editarGasto') {
+            //Se obtiene el id del gasto a editar
+            const id = document.getElementById('formulario-gasto').dataset?.id;
+
+            //Se obtiene el gasto a editar
+            let indexGastoAEditar;
+
+            if (id && gastosGuardados) {
+                gastosGuardados.forEach((gasto, index) => {
+                    if (gasto.id === id) {
+                        indexGastoAEditar = index;
+                    }
+                });
+            }
+
+            //Se edita el gasto
+            const nuevosGastos = [...gastosGuardados];
+            nuevosGastos[indexGastoAEditar] = {
+                ...gastosGuardados[indexGastoAEditar],
+                descripcion: descripcion.value,
+                precio: precio.value,
+            }
+
+            //Se guarda el gasto editado
             window.localStorage.setItem('gastos', JSON.stringify(nuevosGastos));
-        } else {
-            //Si no hay gastos guardados, se crea un array con el gasto
-            window.localStorage.setItem('gastos', JSON.stringify([{...nuevoGasto }]));
+
         }
 
         //Se resetea el formulario y lo cierra
@@ -103,3 +135,4 @@ formulario.addEventListener('submit', (e) => {
         mostrarTotalGastado();
    }
 });
+
